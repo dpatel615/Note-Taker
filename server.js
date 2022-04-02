@@ -2,6 +2,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const {v4 : uuidv4} = require('uuid')
 
 // if port is any route or 3001
 const PORT = process.env.PORT || 3001;
@@ -20,17 +21,18 @@ app.use(express.static('public'));
 
 
 // request data
-const {notes} = require('./db/db.json');
-
-// function handling taking the data from req.body and adding it to our animals.json
-function createNewNote (body, notesArray) {
-    const note = body;
+var notes = require('./db/db.json');
+console.log(notes.notes);
+// data from req.body and adding it to our animals.json 
+function CurrentNewNote (bodyNotes, notesArray) {
+    const note = bodyNotes;
+    console.log(note);
     notesArray.push(note);
-
+  //  console.log(notesArray);
     // path to write file
     fs.writeFileSync(
         path.join(__dirname, './db/db.json'),
-        JSON.stringify({notes : notesArray}, null, 2)
+        JSON.stringify({notes : notesArray})
     );
 
     // return finished code to post route for reponse
@@ -53,15 +55,16 @@ function validateNote (note) {
 // route GET 
 
 app.get('/api/notes', (req, res) => {
-    res.json(notes);
-
+   return res.json(notes.notes);
+   
 });
 
 // route to server to accept data to be used or stored server-side
 app.post('/api/notes' , (req, res) => {
 
     // set id based on what the next index of the array will be
-    req.body.id = notes.lenght.tostring();
+    req.body.id = uuidv4();
+  
 
     // if any data in req.body is incorrect, send error
     if(!validateNote(req.body)) {
@@ -70,7 +73,7 @@ app.post('/api/notes' , (req, res) => {
     } else{
 
         // add note to json file and animals array in this function
-        const note = currentNewNote(req.body, notes);
+        const note = CurrentNewNote(req.body, notes.notes);
 
         res.json(note);
     }
@@ -83,10 +86,17 @@ app.delete('/api/notes/:id', (req, res) => {
     const id = req.params.id;
     let note;
 
-    notes.map((Element, index) => {
-        if(Element, id == id){
+    notes.notes.map((Element, index) => {
+        
+        if(Element.id === id){
+            console.log(Element, "this is from if statement");
             note = Element
-            notes.splice(index,1)
+           NewArraynotes = notes.notes.splice(index,index);
+            console.log(index);
+            fs.writeFileSync(
+                path.join(__dirname, './db/db.json'),
+                JSON.stringify({notes : NewArraynotes})
+            );
             return res.json(note);
         }
     })
